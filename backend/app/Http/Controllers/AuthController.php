@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use Auth;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
@@ -25,7 +25,7 @@ class AuthController extends Controller
             'password'=>Hash::make($request->password),
         ]);
 
-        $token = $user->createtoken('auth_token')->plainTextToken;
+        $token = $user->createToken('auth_token')->plainTextToken;
         return response()->json([
             'user'=>$user,
             'token' =>$token,
@@ -39,7 +39,7 @@ class AuthController extends Controller
         ]);
         if (!Auth::attempt($request->only('email','password'))){
             throw ValidationException::withMessages([
-                'email' =>[ ' incorrect cerdentials'],
+                'email' => ['The credentials are incorrect.'],
             ]);
         }
 

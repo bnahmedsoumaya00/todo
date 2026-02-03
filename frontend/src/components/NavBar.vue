@@ -20,6 +20,7 @@
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores'
+import { authService } from '@/services/authService'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -30,13 +31,7 @@ const currentUser = computed(() => authStore.currentUser)
 const logout = async () => {
   try {
     if (authStore.token) {
-      await fetch('http://localhost:8000/api/logout', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${authStore.token}`,
-          'Content-Type': 'application/json'
-        }
-      })
+      await authService.logout()
     }
   } catch (error) {
     console.error('Logout error:', error)

@@ -74,7 +74,8 @@
                         </v-data-table>
                     </v-card-text>
                 </v-card>
-            </v-col><v-col cols="12" md="4">
+            </v-col>
+            <v-col cols="12" md="4">
                 <v-card elevation="2">
                     <v-card-title class="text-h5 font-weight-bold">
                         <v-icon class="mr-2">mdi-clock-fast</v-icon>
@@ -91,7 +92,7 @@
                                     {{ todo.title }}
                                 </v-list-item-title>
                                 <v-list-item-subtitle>
-                                    by {{ todo.user.name }}
+                                    by {{ todo.user?.name || 'Unknown' }}
                                 </v-list-item-subtitle>
                             </v-list-item>
                         </v-list>
@@ -104,9 +105,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import axios from 'axios'
-import { useAbility } from '@casl/vue'
-
+import api from '@/services/api'
 
 const stats = ref({
   total_users: 0,
@@ -140,29 +139,25 @@ const formatDate = (date) => {
 }
 
 const loadDashboard = async () => {
-    loading.value=true
-    error.value= null
+  loading.value = true
+  error.value = null
   try {
-    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000/api'
-    const response = await axios.get(
-      `${baseUrl}/admin/dashboard`,
-      {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      }
-    )
-    
+    const response = await api.get('/admin/dashboard')
     stats.value = response.data
-    
-  }catch (err) {
+  } catch (err) {
     console.error('Dashboard load error:', err)
-    error.value = err.response?.data?.message || 'Failed to load dashboard'
+    if (err.response?.status === 404) {
+      error.value = 'Admin dashboard endpoint not found. Please check your backend routes.'
+    } else if (err.response?.status === 403) {
+      error.value = 'Access denied. Admin privileges required.'
+      setTimeout(() => router.push('/'), 2000)
+    } else {
+      error.value = err.response?.data?.message || 'Failed to load dashboard'
+    }
   } finally {
     loading.value = false 
   }
 }
-
 
 onMounted(() => {
   const user = JSON.parse(localStorage.getItem('user') || '{}')

@@ -7,7 +7,7 @@
         <v-spacer></v-spacer>
         <v-btn 
           color="primary"
-          @click="dialog = true"
+          @click="openAddDialog"
         >
           Add Todo
         </v-btn>
@@ -81,7 +81,7 @@
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn color="blue-darken-1" variant="text" @click="dialog = false">Cancel</v-btn>
+          <v-btn color="blue-darken-1" variant="text" @click="closeDialog">Cancel</v-btn>
           <v-btn color="blue-darken-1" variant="text" @click="saveTodo">Save</v-btn>
         </v-card-actions>
       </v-card>
@@ -103,14 +103,11 @@ const formRef = ref()
 
 const loadTodos = async () => {
   try {
-    console.log('Loading todos...')
     const data = await todoService.getTodos()
-    console.log('Todos loaded:', data)
     todoStore.setTodos(data)
   } catch (error) {
     console.error('Failed to load todos:', error)
     if (error.response?.status === 401) {
-      // Token expired or invalid
       localStorage.removeItem('token')
       localStorage.removeItem('user')
       window.location.href = '/login'
@@ -126,6 +123,11 @@ const toggleComplete = async (todo) => {
     console.error('Failed to update todo:', error)
     alert('Failed to update todo')
   }
+}
+
+const openAddDialog = () => {
+  resetForm()
+  dialog.value = true
 }
 
 const editTodo = (todo) => {
@@ -154,13 +156,16 @@ const saveTodo = async () => {
       const newTodo = await todoService.createTodo(todoForm.value)
       todoStore.addTodo(newTodo)
     }
-    dialog.value = false
-    resetForm()
-    await loadTodos()
+    closeDialog()
   } catch (error) {
     console.error('Failed to save todo:', error)
     alert('Failed to save todo. Please check console for details.')
   }
+}
+
+const closeDialog = () => {
+  dialog.value = false
+  resetForm()
 }
 
 const resetForm = () => {

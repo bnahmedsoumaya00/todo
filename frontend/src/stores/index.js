@@ -4,7 +4,7 @@ import { ability } from '@/ability'
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
-    user: null,
+    user: JSON.parse(localStorage.getItem('user') || 'null'),
     token: localStorage.getItem('token') || null
   }),
   getters: {
@@ -18,7 +18,6 @@ export const useAuthStore = defineStore('auth', {
       localStorage.setItem('token', token)
       localStorage.setItem('user', JSON.stringify(user))
 
-
       const newAbility = defineAbilitiesFor(user)
       ability.update(newAbility.rules)
     },
@@ -29,7 +28,6 @@ export const useAuthStore = defineStore('auth', {
       localStorage.removeItem('user')
 
       ability.update([])
-      
     }
   }
 })
